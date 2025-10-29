@@ -67,16 +67,14 @@ The scripts use from quanser.hardware import HIL. Install the Quanser Python API
 
 python -c "from quanser.hardware import HIL; print('OK')"
 Windows extras (recommended for RT)
-bash
-Kodu kopyala
+
 pip install pywin32
 FFmpeg (for animations)
 Install FFmpeg and make sure ffmpeg is on PATH.
 
 Windows (PowerShell):
 
-powershell
-Kodu kopyala
+
 winget install --id Gyan.FFmpeg -e
 Ubuntu:
 
@@ -88,8 +86,7 @@ macOS (Homebrew):
 brew install ffmpeg
 If it isn’t discovered automatically, set:
 
-powershell
-Kodu kopyala
+
 $env:FFMPEG_PATH="C:\path\to\ffmpeg.exe"
 2) Repository layout
 
@@ -244,8 +241,7 @@ python eval/plot_results3.py \
 5.2 Animation (MP4): LQR vs CfC
 eval/plot_animation.py builds a 3-panel animation (θ, α, u) from two CSV logs (LQR and CfC). It resamples to a target VIDEO_FPS and uses FFmpeg to export MP4.
 
-bash
-Kodu kopyala
+
 python eval/plot_animation.py
 # Edit at the top:
 # LQR_CSV_PATH, CFC_CSV_PATH, DT, VIDEO_FPS, SAVE_PATH
@@ -280,8 +276,7 @@ realtime/Quanser_policy_BU-M_asaf.py supports CONTROLLER="LQR" or "CfC". For LQR
 CONTROLLER = "LQR"
 LQR_GAIN   = [11.8303, -30.4544, 1.4627, -0.6952]  # [e_theta, -alpha, -theta_dot, -alpha_dot]
 LQR_SIGN   = -1.0                                   # flip if needed to match plant polarity
-bash
-Kodu kopyala
+
 python realtime/Quanser_policy_BU-M_asaf.py
 6.3 Generate datasets on hardware
 realtime/Quanser_policy_asaf_dataset.py runs a controller (e.g., LQR) and logs CSV with canonical headers used by the data tools.
