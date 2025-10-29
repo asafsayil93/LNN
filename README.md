@@ -44,31 +44,27 @@ conda create -n rfl-cfc python=3.10 -y
 conda activate rfl-cfc
 Pip (system/venv)
 
-bash
-Kodu kopyala
+
 python -m venv .venv
 # Windows
 .venv\Scripts\activate
 # Linux/macOS
 source .venv/bin/activate
 Core dependencies
-bash
-Kodu kopyala
+
 pip install numpy pandas matplotlib h5py tqdm scipy
 pip install ncps               # CfC/NCP library (provides ncps.torch.CfC)
 PyTorch
 CPU (cross-platform):
 
-bash
-Kodu kopyala
+
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 GPU: install the appropriate wheel from PyTorch per your CUDA version.
 
 Quanser Python API (for hardware)
 The scripts use from quanser.hardware import HIL. Install the Quanser Python API/SDK provided by your lab/vendor (not always on PyPI). After installing drivers and the Python package, verify:
 
-python
-Kodu kopyala
+
 python -c "from quanser.hardware import HIL; print('OK')"
 Windows extras (recommended for RT)
 bash
@@ -84,13 +80,11 @@ Kodu kopyala
 winget install --id Gyan.FFmpeg -e
 Ubuntu:
 
-bash
-Kodu kopyala
+
 sudo apt-get update && sudo apt-get install -y ffmpeg
 macOS (Homebrew):
 
-bash
-Kodu kopyala
+
 brew install ffmpeg
 If it isn’t discovered automatically, set:
 
@@ -98,8 +92,7 @@ powershell
 Kodu kopyala
 $env:FFMPEG_PATH="C:\path\to\ffmpeg.exe"
 2) Repository layout
-bash
-Kodu kopyala
+
 .
 ├── training/
 │   ├── cfc_pretrain_imitation_only.py
@@ -148,8 +141,7 @@ e_theta = theta - theta_desired.
 
 Examples (PowerShell/Bash):
 
-bash
-Kodu kopyala
+
 # STEP logs → packed H5 at 500 Hz (dt=0.002), 10 s per scenario, use tachometer for theta_dot
 python data_tools/csv_to_h5_scenarios.py \
   --csv Datasets/raw/LQR_STEP_log.csv \
@@ -162,8 +154,7 @@ python data_tools/csv_to_h5_scenarios.py \
   --out_h5 Datasets/cosinus_diff.h5 \
   --mode packed --resample_dt 0.002 --T 10 --gear high --theta_dot_from diff
 3.2 Filter/remove bad scenarios (packed H5)
-bash
-Kodu kopyala
+
 python data_tools/h5_filter_scenarios.py \
   --in Datasets/step.h5 --out Datasets/step_filtered.h5 --drop "0:10,100,205"
 Ranges are inclusive (0:10 = 0…10). The script rewrites all /step/* datasets with the kept rows.
@@ -171,14 +162,11 @@ Ranges are inclusive (0:10 = 0…10). The script rewrites all /step/* datasets w
 3.3 Merge multiple packed H5 files
 All inputs must share the same (dt, steps, states_keys).
 
-bash
-Kodu kopyala
 python data_tools/merge_step_h5.py \
   --out Datasets/combined_all_steps.h5 \
   Datasets/step_filtered.h5 Datasets/sinus_filtered.h5 Datasets/cosinus_diff.h5
 3.4 Quick preview plots from H5
-bash
-Kodu kopyala
+
 python data_tools/plot_from_h5.py --h5 Datasets/combined_all_steps.h5 --idx 20 --outdir plots
 4) Training
 All training assumes the input feature order and targets described at the top.
@@ -187,8 +175,7 @@ All training assumes the input feature order and targets described at the top.
 training/cfc_pretrain_imitation_only.py
 Trains CfC to imitate the teacher command (u_teacher / 10), with z-score normalization computed on the train split only.
 
-bash
-Kodu kopyala
+
 # Default CfC mode
 python training/cfc_pretrain_imitation_only.py \
   --data Datasets/combined_all_steps.h5 \
@@ -216,8 +203,7 @@ optional metrics.csv
 training/cfc_pretrain_imitation_1step_office.py
 Adds a 1-step rollout loss on a plant/ensemble (if configured in the script). Typical usage mirrors imitation-only; see in-file CLI.
 
-bash
-Kodu kopyala
+
 python training/cfc_pretrain_imitation_1step_office.py \
   --data Datasets/combined_all_steps.h5 \
   --save_dir runs/cfc_pretrain_1step_default12N \
@@ -227,8 +213,7 @@ python training/cfc_pretrain_imitation_1step_office.py \
 training/cfc_pretrain_imitation_1stepKstep.py
 Imitation + Control Lyapunov Function term (V = β_eθ * ½ e_θ² + β_θ * ½ θ̇² + β_α * ½ α²), computed at 1-step or K-step horizon.
 
-bash
-Kodu kopyala
+
 python training/cfc_pretrain_imitation_1stepKstep.py \
   --data Datasets/combined_all_steps.h5 \
   --save_dir runs/cfc_pretrain_imitation_1stepCLF_12N \
@@ -249,8 +234,7 @@ eval/plot_results3.py reads LQR directly from the H5 dataset at a given scenario
 
 It can auto-align the references via cross-correlation to absorb small time shifts.
 
-bash
-Kodu kopyala
+
 python eval/plot_results3.py \
   -- (edit inside the file, or pass via env) \
   # Typical inline edits:
@@ -283,8 +267,7 @@ Builds a reference trajectory (several helper generators) or reads from H5.
 
 Runs a fixed-rate sleep+spin loop with 1 ms Windows timer resolution.
 
-bash
-Kodu kopyala
+
 python realtime/Quanser_policy_asaf_office.py
 # Edit at the top:
 # CKPT_PATH, NORM_NPZ_PATH
@@ -292,8 +275,7 @@ python realtime/Quanser_policy_asaf_office.py
 6.2 LQR baseline (and CfC toggle)
 realtime/Quanser_policy_BU-M_asaf.py supports CONTROLLER="LQR" or "CfC". For LQR:
 
-bash
-Kodu kopyala
+
 # In file:
 CONTROLLER = "LQR"
 LQR_GAIN   = [11.8303, -30.4544, 1.4627, -0.6952]  # [e_theta, -alpha, -theta_dot, -alpha_dot]
@@ -304,8 +286,7 @@ python realtime/Quanser_policy_BU-M_asaf.py
 6.3 Generate datasets on hardware
 realtime/Quanser_policy_asaf_dataset.py runs a controller (e.g., LQR) and logs CSV with canonical headers used by the data tools.
 
-bash
-Kodu kopyala
+
 python realtime/Quanser_policy_asaf_dataset.py
 # Edit 'value' and 'duration' (or use dataset-based reference)
 # Output CSV is compatible with csv_to_h5_scenarios.py
@@ -316,8 +297,7 @@ unwrap angles, low-pass (Butterworth), differentiate with Savitzky–Golay,
 
 build a one-step dataset and fit discrete (Ad, Bd) with ridge regularization.
 
-bash
-Kodu kopyala
+
 python graybox/graybox_ident.py \
   --data Datasets/combined_all_steps.h5 \
   --indices "0:1000" \
@@ -366,8 +346,7 @@ Please review safety procedures before running experiments.
 Quick command cheat-sheet
 Prep
 
-bash
-Kodu kopyala
+
 # CSV → packed H5 @ 500 Hz
 python data_tools/csv_to_h5_scenarios.py \
   --csv Datasets/raw/LQR_STEP_log.csv \
@@ -396,25 +375,21 @@ python eval/plot_results3.py
 # (edit DATASET_H5_PATH, SCEN_IDX, CFC_CSV_PATH at top)
 Animate
 
-bash
-Kodu kopyala
+
 python eval/plot_animation.py
 # (edit LQR_CSV_PATH, CFC_CSV_PATH, DT, VIDEO_FPS, SAVE_PATH)
 Deploy (CfC)
 
-bash
-Kodu kopyala
+
 python realtime/Quanser_policy_asaf_office.py
 # (set CKPT_PATH, NORM_NPZ_PATH; choose a reference)
 Deploy (LQR)
 
-bash
-Kodu kopyala
 python realtime/Quanser_policy_BU-M_asaf.py
 # ensure CONTROLLER="LQR"
 Record dataset
 
 bash
-Kodu kopyala
+
 python realtime/Quanser_policy_asaf_dataset.py
 # edit value/duration or dataset-based reference
